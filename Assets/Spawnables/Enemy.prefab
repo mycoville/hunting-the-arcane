@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c8f0748b05a07b4687815486caf8cd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noticeDistance: 8.5
+  noticeDistance: 8.75
   stunAmount: 0.12
   spriteRenderer: {fileID: 8897216958742051064}
   moveSpeed: 2.2

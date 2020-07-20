@@ -41,7 +41,7 @@ public class PlayerProjectile : MonoBehaviour
             }
 
             // Calling the StaticManager to check the enemy list HP situation
-            StaticManager.CheckIfEnemiesDead();
+            EnemyManager.emInstance.CheckIfEnemiesDead();
         }
 
         //Destroy(this.gameObject);

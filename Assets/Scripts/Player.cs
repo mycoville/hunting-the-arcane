@@ -22,7 +22,8 @@ public class Player : MonoBehaviour
     private Transform playerObjTF;
     private bool plrMoving = false;
     public GameObject playerLegsObj; // Player leg sprites with their constant animation
-    public FloatingJoystick joystick; // From "Joystick Pack" by Fenerax Studios
+    public FloatingJoystick joystickFloating; // From "Joystick Pack" by Fenerax Studios
+    public FixedJoystick joystickFixed; 
 
     // Shooting and aiming rotation
     private Transform targetTF = null;
@@ -45,27 +46,51 @@ public class Player : MonoBehaviour
 
     public Image healthSpriteOverlay;
     public GameObject gameOverTextObj;
+    public GameObject tryAgainButton;
     private SpriteRenderer playerSprite;
     
     // Player state and sprite
     public List<Sprite> playerSprites;
     public SpriteRenderer playerSpriteRend;
     
+    // Setting up the script with a static reference for easy access
+    public static Player plrInstance;
+
+    void Awake()
+    {
+        plrInstance = this;
+    }
 
     void Start()
     {
+        switch(StaticPlayer.joystickType)
+        {
+            case 0:
+                joystickFloating.gameObject.SetActive(true);
+            break;
+            case 1:
+                joystickFixed.gameObject.SetActive(true);
+            break;
+            default:
+                joystickFloating.gameObject.SetActive(true);
+            break;
+        }
+
         plrRB = this.GetComponent<Rigidbody2D>();
         playerObjTF = this.transform;
                
         playerLegsObj.SetActive(false);
         StaticPlayer.currHP = StaticPlayer.maxHP; // Making sure our HP values match in case we've edited them in the inspector
+        tryAgainButton.SetActive(false);
 
         healthSpriteOverlay.fillAmount = 1f;
 
         // Checking & setting up static player values
         StaticPlayer.alive = true;
         StaticPlayer.playerTransform = playerObjTF;
-        
+        StaticPlayer.acquiredWeapons.Add(0);
+        GameplayManager.gpManagerInstance.RefreshWeaponButtons();
+
         RefreshSprite();
 
         // Aim indicator setup
@@ -74,6 +99,8 @@ public class Player : MonoBehaviour
 
         // Setting muzzle sound based on current weapon
         RefreshMuzzleSound();
+
+        ScreenMessager.smInstance.ShowMessage("Kill all enemies and survive!");
 
     }
 
@@ -87,8 +114,22 @@ public class Player : MonoBehaviour
 
             // Using the touch-based joystick if we build for Android
             #if UNITY_ANDROID
-                horizontalMove = joystick.Horizontal;
-                verticalMove = joystick.Vertical;
+            switch(StaticPlayer.joystickType)
+            {
+                case 0:
+                    horizontalMove = joystickFloating.Horizontal;
+                    verticalMove = joystickFloating.Vertical;
+                break;
+                case 1:
+                    horizontalMove = joystickFixed.Horizontal;
+                    verticalMove = joystickFixed.Vertical;
+                break;
+                default:
+                    horizontalMove = joystickFloating.Horizontal;
+                    verticalMove = joystickFloating.Vertical;
+                break;
+            }
+                
             #endif
 
             Vector2 moveDirection = new Vector2(horizontalMove, verticalMove).normalized;
@@ -184,8 +225,8 @@ public class Player : MonoBehaviour
             if(StaticPlayer.statusChanged)
             {
                 playerLegsObj.SetActive(false);
-                joystick.gameObject.SetActive(false);
                 gameOverTextObj.SetActive(true);
+                tryAgainButton.SetActive(true);
                 indicatorTarget.SetActive(false);
                 StaticPlayer.alive = false;
                 playerSpriteRend.sprite = playerSprites[0];
@@ -217,7 +258,21 @@ public class Player : MonoBehaviour
         {
 
             // Using the object pooler instance to spawn bullets
-            ObjectPooler.StaticObjectPooler.SpawnBullet(muzzleTF.position, muzzleTF.rotation);
+            ObjectPooler.opInstance.SpawnBullet(muzzleTF.position, muzzleTF.rotation);
+
+            // Shotgun has more pellets
+            if(StaticPlayer.weaponType == 2)
+            {
+                Quaternion bulletRotation;
+                bulletRotation = muzzleTF.rotation * Quaternion.Euler(new Vector3(0,0,4.5f));
+                ObjectPooler.opInstance.SpawnBullet(muzzleTF.position, bulletRotation);
+                bulletRotation = muzzleTF.rotation * Quaternion.Euler(new Vector3(0,0,-4.5f));
+                ObjectPooler.opInstance.SpawnBullet(muzzleTF.position, bulletRotation);
+                bulletRotation = muzzleTF.rotation * Quaternion.Euler(new Vector3(0,0,9f));
+                ObjectPooler.opInstance.SpawnBullet(muzzleTF.position, bulletRotation);
+                bulletRotation = muzzleTF.rotation * Quaternion.Euler(new Vector3(0,0,-9f));
+                ObjectPooler.opInstance.SpawnBullet(muzzleTF.position, bulletRotation);
+            }
 
             shootTimer = 0;
 
@@ -225,6 +280,7 @@ public class Player : MonoBehaviour
 
             muzzleAudioSrc.Play();
            
+           //CorpseManager.cmInstance.NewCorpse(playerObjTF.position);
         }
     }
 
@@ -255,7 +311,7 @@ public class Player : MonoBehaviour
     // Checking through the enemy transform list while comparing their position to that of the player
     private void CheckForClosest()
     {
-        List<Transform> enemyTransforms = StaticManager.enemyTransforms;
+        List<Transform> enemyTransforms = EnemyManager.emInstance.enemyTransforms;
         List<Transform> acceptedEnemyTFs = new List<Transform>();
 
         if(enemyTransforms.Count != 0) // There are still enemies
@@ -319,10 +375,10 @@ public class Player : MonoBehaviour
                 playerSpriteRend.sprite = playerSprites[2];
             break;
             case 2:
-                playerSpriteRend.sprite = playerSprites[2];
+                playerSpriteRend.sprite = playerSprites[3];
             break;
             case 3:
-                playerSpriteRend.sprite = playerSprites[3];
+                playerSpriteRend.sprite = playerSprites[4];
             break;
             default:
                 playerSpriteRend.sprite = playerSprites[1];
@@ -342,6 +398,9 @@ public class Player : MonoBehaviour
             break;
             case 1:
                 muzzleAudioSrc.clip = shotSounds[1];
+            break;
+            case 2:
+                muzzleAudioSrc.clip = shotSounds[3];
             break;
             case 3:
                 muzzleAudioSrc.clip = shotSounds[2];

@@ -2,6 +2,7 @@
 In this script:
 - Enemy spawning, spawn positions
 - Enemy destruction based on StaticManager's values
+- Enemy transforms, checking for enemy deaths
 */
 
 using System.Collections;
@@ -14,7 +15,6 @@ public class EnemyManager : MonoBehaviour
     public Enemy enemyPF; // Enemy prefab reference
     public Transform spawnTF;
     public int enemyAmount = 10;
-    public GameObject levelPassText;
 
     private int counter = 0;
 
@@ -22,9 +22,22 @@ public class EnemyManager : MonoBehaviour
     public List<Transform> spawnTopLefts;
     public List<Transform> spawnBottomRights;
 
+    [Header("Don't adjust the values below in the Inspector")]
+
+    public List<Transform> enemyTransforms = new List<Transform>();
+    public bool enemyDeath = false;
+    public List <Transform> tfsToRemove = new List<Transform>(); // List for enemy transforms to remove as the enemies have been killed
+
+    public static EnemyManager emInstance; // Static instance for easy references
+
+    void Awake()
+    {
+        emInstance = this;
+    }
+
     void Start()
     {
-        StaticManager.enemyTransforms = new List<Transform>();
+        enemyTransforms = new List<Transform>();
 
         // Spawning enemies for the adjusted amount
         for(int i = 0; i < enemyAmount; i++)
@@ -32,29 +45,8 @@ public class EnemyManager : MonoBehaviour
             SpawnEnemy();
         }
 
-        levelPassText.SetActive(false);
-    }
-
-    void FixedUpdate()
-    {
-        // In case there are changed is the overall enemy Transform list
-        if(StaticManager.listChanged)
-        {
-            // We remove and destroy the Transforms and Gameobjects indicated by StaticManager
-            for(int j = 0; j < StaticManager.tfsToRemove.Count; j++)
-            {
-                StaticManager.enemyTransforms.Remove(StaticManager.tfsToRemove[j]);
-                Destroy(StaticManager.tfsToRemove[j].gameObject);
-            }
-
-            StaticManager.listChanged = false;
-
-            // If we've killed all enemies, the level is done!
-            if(StaticManager.enemyTransforms.Count == 0)
-            {
-                levelPassText.SetActive(true);
-            }
-        }
+        // Pre-spawning as many corpses as there are enemies
+        CorpseManager.cmInstance.PreSpawnCorpses(enemyTransforms.Count);
     }
 
     // Spawning an enemy in a random position in one of the allocated spawn areas
@@ -75,7 +67,8 @@ public class EnemyManager : MonoBehaviour
         spawnedEnemy.transform.name += counter;
         counter++;
         // Populating the enemy Transform list one at a time
-        StaticManager.enemyTransforms.Add(spawnedEnemy.transform);
+        //StaticManager.enemyTransforms.Add(spawnedEnemy.transform);
+        enemyTransforms.Add(spawnedEnemy.transform);
 
         // Making random enemies aggressive
         int rolledChance = Random.Range(0,10);
@@ -84,6 +77,40 @@ public class EnemyManager : MonoBehaviour
             spawnedEnemy.GetComponent<Follower>().MakeAggressive();
         }
         
+    }
+
+    // Called by PlayerProjectile each time it manages to hit an enemy
+    public void CheckIfEnemiesDead()
+    {
+        tfsToRemove = new List<Transform>();
+        enemyDeath = false;
+        
+        for(int i = 0; i < enemyTransforms.Count; i++)
+        {
+            if(enemyTransforms[i].gameObject.GetComponent<Enemy>().currHP == 0)
+            {
+                tfsToRemove.Add(enemyTransforms[i]);
+                CorpseManager.cmInstance.NewCorpse(enemyTransforms[i].position);
+                enemyDeath = true;
+            }
+        }
+
+        // In case we notice that at least 1 enemy has died
+        if(enemyDeath)
+        {
+            // We remove and destroy the Transforms and Gameobjects indicated by StaticManager
+            for(int j = 0; j < tfsToRemove.Count; j++)
+            {
+                enemyTransforms.Remove(tfsToRemove[j]);
+                Destroy(tfsToRemove[j].gameObject);
+            }
+
+            // If we've killed all enemies, the level is done!
+            if(enemyTransforms.Count == 0)
+            {
+                GameplayManager.gpManagerInstance.PassLevel();
+            }
+        }
     }
 
 }

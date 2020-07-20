@@ -23,11 +23,11 @@ public class ObjectPooler : MonoBehaviour
     public Dictionary<string, Queue<GameObject>> objPoolDict;
 
     // Setting up the script with a static reference for easy access
-    public static ObjectPooler StaticObjectPooler;
+    public static ObjectPooler opInstance;
 
     void Awake()
     {
-        StaticObjectPooler = this;
+        opInstance = this;
     }
 
     void Start()

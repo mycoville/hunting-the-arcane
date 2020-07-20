@@ -167,7 +167,7 @@ public class Follower : MonoBehaviour
     public void MakeAggressive()
     {
         enemyVersion = Version.Aggressive;
-        this.transform.localScale = new Vector2(1.3f, 1.3f);
+        this.transform.localScale = new Vector2(1.25f, 1.25f);
         enemyScript = this.GetComponent<Enemy>();
         enemyScript.maxHP *= 1.75f;
         enemyScript.currHP = enemyScript.maxHP;
