@@ -5,6 +5,6 @@ Hunting the Arcane: A "single-stick" shooter game for mobile devices: Combines e
 Made with Unity version 2019.3.7f1
 
 # Noteworthy
-* Graphics and sounds are placeholders.
+* Graphics and sounds are quickly-made placeholders.
 * No true map design or generation yet: I have not decided whether I want to generate the maps via code or design each of them and make them larger.
 * Some powerups might feel non-impactful, but this is intended as you would collect several of them in one playing session.

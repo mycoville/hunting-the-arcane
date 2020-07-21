@@ -21,6 +21,7 @@ public class CorpseManager : MonoBehaviour
     void Awake()
     {
         cmInstance = this;
+        currentCorpseId = 0;
     }
 
     // Called by EnemyManager after spawning the actual enemies

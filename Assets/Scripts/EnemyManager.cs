@@ -110,7 +110,11 @@ public class EnemyManager : MonoBehaviour
             {
                 GameplayManager.gpManagerInstance.PassLevel();
             }
+
+            // Telling the Indicator to check if there are only a few enemies
+            IndicatorClosest.icInstance.CheckIfFewEnemies();
         }
+
     }
 
 }
