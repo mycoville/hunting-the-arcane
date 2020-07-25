@@ -160,7 +160,7 @@ public class Follower : MonoBehaviour
     {
         wanderTimer = 0f;
         directionDuration = Random.Range(2f, 3f);
-        return new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
+        return EnemyHelper.GetRandomDirection();
     }
 
     // Turning the a Follower-type enemy into a "Rager" version with more hp and larger size, and with a different sprite
