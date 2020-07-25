@@ -65,4 +65,20 @@ public class ObjectPooler : MonoBehaviour
 
     }
 
+    public void SpawnEnemyProjectile(Vector2 spawnPosition, Quaternion spawnRotation)
+    {
+        if(objPoolDict.ContainsKey("enemyshot"))
+        {
+            GameObject spawnedObject = objPoolDict["enemyshot"].Dequeue();
+
+            spawnedObject.transform.localPosition = spawnPosition;
+            spawnedObject.transform.rotation = spawnRotation;
+            spawnedObject.SetActive(true);
+
+            objPoolDict["enemyshot"].Enqueue(spawnedObject);
+
+            //Debug.Log("Spawned enemy bullet");
+        }
+    }
+
 }

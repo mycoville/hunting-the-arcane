@@ -19,6 +19,10 @@ public class EnemyProjectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
+        if(col.CompareTag("Player"))
+        {
+            StaticPlayer.DamagePlayer(100f);
+        }
         this.gameObject.SetActive(false);
     }
 }

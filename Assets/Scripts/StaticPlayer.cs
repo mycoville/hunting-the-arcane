@@ -66,6 +66,11 @@ public static class StaticPlayer
         {
             currHP = 0;
         }
+
+        Player.plrInstance.damageTimer = 0f;
+        Player.plrInstance.playerSpriteRend.color = Color.red; // Changing the sprite color for a short while to better indicate being damaged
+        Player.plrInstance.HealthUpdate();
+        statusChanged = true;
     }
 
     // Resets player stats to default at new session start

@@ -40,7 +40,7 @@ public class Player : MonoBehaviour
     public AudioSource muzzleAudioSrc;
 
     // Player Health and Damage
-    private float damageTimer = 0f;
+    public float damageTimer = 0f;
     public float damageDelay = 0.5f; // giving the player moments of invulnerability after being damaged
     public bool beingDamaged = false;
 
@@ -199,15 +199,14 @@ public class Player : MonoBehaviour
                 if(damageTimer > damageDelay)
                 {
                     StaticPlayer.DamagePlayer(50f); // Current damage is static amount
-                    damageTimer = 0f;
-                    playerSpriteRend.color = Color.red; // Changing the sprite color for a short while to better indicate being damaged
-                    HealthUpdate();
-                    StaticPlayer.statusChanged = true;
                 }
             }
             else
             {
-                playerSpriteRend.color = Color.white;
+                if(damageTimer > damageDelay)
+                {
+                    playerSpriteRend.color = Color.white;
+                }   
             }
 
             // Making the target indicator disappear if there is no target Transform

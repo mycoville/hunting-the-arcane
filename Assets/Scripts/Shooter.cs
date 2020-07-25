@@ -35,6 +35,7 @@ public class Shooter : MonoBehaviour
     // Shooting
     private float shootingTimer = 0;
     private float shootDelay = 1f;
+    public Transform muzzleTransform;
 
     void Start()
     {
@@ -74,15 +75,17 @@ public class Shooter : MonoBehaviour
         {
             shootingTimer += Time.fixedDeltaTime;
 
-            if(distanceToPlayer <= noticeDistance)
+            if(distanceToPlayer > noticeDistance)
             {
                 currentState = State.Wandering;
             }
             else
             {
+                Vector2 aimDirection = StaticPlayer.playerTransform.position - this.transform.position;
+                EnemyHelper.RotateSpriteToDirection(aimDirection, spriteTF);
                 // Enemy shoots towards the player
                 if(shootingTimer > shootDelay)
-                {
+                { 
                     ShootTowardsPlayer();
                 }
             }
@@ -91,9 +94,9 @@ public class Shooter : MonoBehaviour
 
     private void ShootTowardsPlayer()
     {
+        //Debug.Log("Shooting towards player");
+        ObjectPooler.opInstance.SpawnEnemyProjectile(muzzleTransform.position, spriteTF.rotation);
         shootingTimer = 0f;
-        //ObjectPooler.opInstance.
-        Debug.Log("Shooting towards player");
     }
 
     private Vector2 RandomWanderingDirection()

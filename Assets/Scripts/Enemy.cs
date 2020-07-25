@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour
         if(currHP < 0)
         {
             currHP = 0;
+            this.gameObject.SetActive(false);
         }
         damageTimer = 0;
         spriteRend.color = Color.red;
