@@ -12,7 +12,8 @@ using UnityEngine;
 public class EnemyManager : MonoBehaviour
 {
     
-    public Enemy enemyPF; // Enemy prefab reference
+    public GameObject enemyFollowerPF; // Follower Prefab
+    public GameObject enemyShooterPF; // Shooter Prefab
     public Transform spawnTF;
     public int enemyAmount = 10;
 
@@ -61,7 +62,23 @@ public class EnemyManager : MonoBehaviour
 
         Vector2 enemyPos = new Vector2(Random.Range(leftLimit, rightLimit), Random.Range(bottomLimit, topLimit));
         spawnTF.position = enemyPos;
-        var spawnedEnemy = Instantiate(enemyPF, spawnTF);
+
+        int enemyTypeRoll = Random.Range(0,10);
+        GameObject spawnedEnemy;
+        if(enemyTypeRoll < 2)
+        {
+            spawnedEnemy = Instantiate(enemyShooterPF, spawnTF);
+        }
+        else
+        {
+            spawnedEnemy = Instantiate(enemyFollowerPF, spawnTF);
+            // Making 10% of Follower enemies aggressive
+            int rolledChance = Random.Range(0,10);
+            if(rolledChance < 2)
+            {
+                spawnedEnemy.GetComponent<Follower>().MakeAggressive();
+            }
+        }
         spawnedEnemy.transform.parent = null;
         // Making the enemies more "unique" with the counter to their names
         spawnedEnemy.transform.name += counter;
@@ -69,14 +86,6 @@ public class EnemyManager : MonoBehaviour
         // Populating the enemy Transform list one at a time
         //StaticManager.enemyTransforms.Add(spawnedEnemy.transform);
         enemyTransforms.Add(spawnedEnemy.transform);
-
-        // Making random enemies aggressive
-        int rolledChance = Random.Range(0,10);
-        if(rolledChance < 2)
-        {
-            spawnedEnemy.GetComponent<Follower>().MakeAggressive();
-        }
-        
     }
 
     // Called by PlayerProjectile each time it manages to hit an enemy

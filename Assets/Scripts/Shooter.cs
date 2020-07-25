@@ -36,6 +36,7 @@ public class Shooter : MonoBehaviour
     private float shootingTimer = 0;
     private float shootDelay = 1f;
     public Transform muzzleTransform;
+    public LayerMask aimIgnoreLayers;
 
     void Start()
     {
@@ -56,26 +57,29 @@ public class Shooter : MonoBehaviour
         {
             wanderTimer += Time.fixedDeltaTime;
 
-            if(distanceToPlayer > noticeDistance)
+            if(wanderTimer >= directionDuration)
             {
-                if(wanderTimer >= directionDuration)
-                {
-                    wanderDirection = RandomWanderingDirection();     
-                }
+                wanderDirection = RandomWanderingDirection();     
+            }
 
-                rb2d.velocity = wanderDirection * moveSpeed;
-                EnemyHelper.RotateSpriteToDirection(wanderDirection, spriteTF);
-            }
-            else // if the player is close enough
+            EnemyHelper.RotateSpriteToDirection(wanderDirection, spriteTF);
+            rb2d.velocity = wanderDirection * moveSpeed;
+            
+            if(distanceToPlayer <= noticeDistance)
             {
-                currentState = State.Shooting;
+                if(CheckLineOfSight())
+                {
+                    currentState = State.Shooting;
+                }
             }
+
         }
         else if(currentState == State.Shooting)
         {
             shootingTimer += Time.fixedDeltaTime;
 
-            if(distanceToPlayer > noticeDistance)
+            // The Shooter wanders in case he is far away or has no direct line of sight
+            if(distanceToPlayer > noticeDistance || !CheckLineOfSight())
             {
                 currentState = State.Wandering;
             }
@@ -83,13 +87,28 @@ public class Shooter : MonoBehaviour
             {
                 Vector2 aimDirection = StaticPlayer.playerTransform.position - this.transform.position;
                 EnemyHelper.RotateSpriteToDirection(aimDirection, spriteTF);
-                // Enemy shoots towards the player
+
                 if(shootingTimer > shootDelay)
-                { 
+                {
                     ShootTowardsPlayer();
                 }
             }
         }
+    }
+
+    private bool CheckLineOfSight()
+    {
+        bool lineOfSight = false;
+        Vector2 aimDirection = StaticPlayer.playerTransform.position - this.transform.position;
+        RaycastHit2D hit = Physics2D.Raycast(this.transform.position, aimDirection.normalized, 10f, ~aimIgnoreLayers);
+        if(hit.collider != null)
+        {
+            if(hit.collider.CompareTag("Player"))
+            {
+                lineOfSight = true;
+            }
+        }
+        return lineOfSight;
     }
 
     private void ShootTowardsPlayer()
